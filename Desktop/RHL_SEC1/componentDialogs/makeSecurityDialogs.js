@@ -91,12 +91,12 @@ async getName(step){
     { 
     return await step.prompt(TEXT_PROMPT, 'What is the URL you need to scan ?');
     }
-    // if(step.result === false)
-    // { 
-    //     await step.context.sendActivity("You chose not to go ahead with Service.");
-    //     endDialog = true;
-    //     return await step.endDialog();   
-    // }
+    if(step.result === false)
+    { 
+        await step.context.sendActivity("You chose not to go ahead with Service.");
+        endDialog = true;
+        return await step.endDialog();   
+    }
 
 
 }

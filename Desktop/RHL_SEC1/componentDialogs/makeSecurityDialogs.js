@@ -46,9 +46,6 @@ this.addDialog(new WaterfallDialog(WATERFALL_DIALOG, [
 
     this.firstStep.bind(this),  // Ask confirmation if user wants to use the service?
     this.getName.bind(this),    // Get name of URL
-    // this.getNumberOfParticipants.bind(this),  // Number of participants for reservation
-    // this.getDate.bind(this), // Date of reservation
-    // this.getTime.bind(this),  // Time of reservation
     this.confirmStep.bind(this), // Show summary of values entered by user and ask confirmation to make reservation
     this.summaryStep.bind(this),
     this.firstStep1.bind(this),
@@ -58,19 +55,19 @@ this.addDialog(new WaterfallDialog(WATERFALL_DIALOG, [
 
    }
 
-   async run(turnContext, accessor) {
+   async run(turnContext, accessor ,entities) {
     const dialogSet = new DialogSet(accessor);
     dialogSet.add(this);
 
     const dialogContext = await dialogSet.createContext(turnContext);
     const results = await dialogContext.continueDialog();
     if (results.status === DialogTurnStatus.empty) {
-        await dialogContext.beginDialog(this.id);
+        await dialogContext.beginDialog(this.id, entities);
     }
 }
 
 async firstStep(step) {
-endDialog = false;
+    
 // Running a prompt here means the next WaterfallStep will be run when the users response is received.
 return await step.prompt(CONFIRM_PROMPT, 'Would you like to use a service ', ['yes', 'no']);
 endDialog = false;

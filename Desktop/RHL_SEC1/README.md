@@ -1,4 +1,4 @@
-# echo-bot
+# RHL-SECURITY-BOT
 
 Bot Framework v4 echo bot sample
 

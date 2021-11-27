@@ -50,7 +50,7 @@ class MakeSecurityDialogs extends ComponentDialog {
         this.getName.bind(this),    // Get name of URL
         this.confirmStep.bind(this), // Show summary of values entered by user and ask confirmation to make reservation
         this.summaryStep.bind(this),
-        this.firstStep1.bind(this),
+        // this.firstStep1.bind(this),
     ]));
         this.initialDialogId = WATERFALL_DIALOG;
 
@@ -74,7 +74,6 @@ async firstStep(step) {
 // Running a prompt here means the next WaterfallStep will be run when the users response is received.
 return await step.prompt(CONFIRM_PROMPT, 'Would you like to use a service ', ['yes', 'no']);
 endDialog = false;
-// Running a prompt here means the next WaterfallStep will be run when the users response is received.
 
 
 }
@@ -116,7 +115,7 @@ async confirmStep(step){
 }
 
 
-
+//Summary of the steps will return the summary and the resualt of the requiest to user 
 summaryStep(step){
 
     return new Promise((resolve, reject) => {
@@ -137,9 +136,7 @@ summaryStep(step){
                     resultOfScan = "The URL is not safe!"
 
                     step.context.sendActivity({text: "Your resualt: ",attachments:[CardFactory.adaptiveCard(CARDS [1])]});
-                    // resolve(resultOfScan);
-                    // step.context.sendActivity("Your resualt: "+ resultOfScan);
-
+                    
                     
                 }
                 else{
@@ -148,7 +145,6 @@ summaryStep(step){
                     resultOfScan = "The URL is  safe!"
                     
                     step.context.sendActivity({text: "Your resualt: ",attachments:[CardFactory.adaptiveCard(CARDS [0])]});
-                    // reject(resultOfScan);
                   
                 }
                
@@ -166,47 +162,12 @@ summaryStep(step){
 
 }
 
-// summaryStep({result: true})
-//     .then((res) => {
-//         // successful result
-//     }).catch((error) => {
-//     // error
-//     });
 
 
 
-
-
-
-
-
-
-async firstStep1(step) {
-    endDialog = false;
-    // Running a prompt here means the next WaterfallStep will be run when the users response is received.
-    await step.context.sendActivity({
-        text: ' resultOfScan',
-        attachments: [CardFactory.adaptiveCard(CARDS[0])]
-    });
-    
-    return await step.prompt(TEXT_PROMPT, '');
-          
-    }
-    
-
-
-// async noOfParticipantsValidator(promptContext) {
-//     // This condition is our validation rule. You can also change the value at this point.
-//     return promptContext.recognized.succeeded && promptContext.recognized.value > 1 && promptContext.recognized.value < 150;
-// }
-
-async isDialogComplete(){
-    return endDialog;
-}
 }
 
 module.exports.MakeSecurityDialogs = MakeSecurityDialogs;
-
 
 
 

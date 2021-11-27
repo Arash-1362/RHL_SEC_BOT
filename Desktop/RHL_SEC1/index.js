@@ -6,12 +6,12 @@ const dotenv = require('dotenv');
 // Import required bot configuration.
 const ENV_FILE = path.join(__dirname, '.env');
 dotenv.config({ path: ENV_FILE });
-const restify = require('restify');
+const restify = require('restify');//restify library to crete web server hosting the bot REST service.
 
 // Import required bot services.
 // See https://aka.ms/bot-services to learn more about the different parts of a bot.
 const {
-    CloudAdapter,
+    CloudAdapter,//bot framework adapter
     ConfigurationServiceClientCredentialFactory,
     createBotFrameworkAuthenticationFromConfiguration,
     MemoryStorage, // have added the memory storage class 
@@ -22,7 +22,7 @@ const {
 // This bot's main dialog.
 const { EchoBot } = require('./bot');
 
-// Create HTTP server
+// Create HTTP server hosting the bot
 const server = restify.createServer();
 server.use(restify.plugins.bodyParser());
 
@@ -49,8 +49,8 @@ const adapter = new CloudAdapter(botFrameworkAuthentication);
 const onTurnErrorHandler = async (context, error) => {
     // This check writes out errors to console log .vs. app insights.
     // NOTE: In production environment, you should consider logging this to Azure
-    //       application insights. See https://aka.ms/bottelemetry for telemetry
-    //       configuration instructions.
+    // application insights. See https://aka.ms/bottelemetry for telemetry
+    // configuration instructions.
     console.error(`\n [onTurnError] unhandled error: ${ error }`);
 
     // Send a trace activity, which will be displayed in Bot Framework Emulator
@@ -76,7 +76,7 @@ const userState = new UserState(memoryStorage);
 // Create the main dialog.
 const myBot = new EchoBot(conversationState,userState);
 
-// Listen for incoming requests.
+// Listen for incoming requests on locat host:3978/api/messages
 server.post('/api/messages', async (req, res) => {
     // Route received a request to adapter for processing
     await adapter.process(req, res, (context) => myBot.run(context));

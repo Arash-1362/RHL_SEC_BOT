@@ -1,3 +1,5 @@
+
+//template is used from https://github.com/microsoft/BotBuilder-Samples
 const {WaterfallDialog, ComponentDialog } = require('botbuilder-dialogs');
 const {ConfirmPrompt, ChoicePrompt, DateTimePrompt, NumberPrompt, TextPrompt  } = require('botbuilder-dialogs');
 const {DialogSet, DialogTurnStatus } = require('botbuilder-dialogs');
@@ -34,47 +36,44 @@ class MakeSecurityDialogs extends ComponentDialog {
 
         
 
-        this.addDialog(new TextPrompt(TEXT_PROMPT));
-        this.addDialog(new ChoicePrompt(CHOICE_PROMPT));
-        this.addDialog(new ConfirmPrompt(CONFIRM_PROMPT));
-        this.addDialog(new NumberPrompt(NUMBER_PROMPT,this.noOfParticipantsValidator));
-        this.addDialog(new DateTimePrompt(DATETIME_PROMPT));
+            this.addDialog(new TextPrompt(TEXT_PROMPT));
+            this.addDialog(new ChoicePrompt(CHOICE_PROMPT));
+            this.addDialog(new ConfirmPrompt(CONFIRM_PROMPT));
+            this.addDialog(new NumberPrompt(NUMBER_PROMPT,this.noOfParticipantsValidator));
+            this.addDialog(new DateTimePrompt(DATETIME_PROMPT));
 
 
 
-this.addDialog(new WaterfallDialog(WATERFALL_DIALOG, [  
+    this.addDialog(new WaterfallDialog(WATERFALL_DIALOG, [  
 
-    this.firstStep.bind(this),  // Ask confirmation if user wants to use the service?
-    this.getName.bind(this),    // Get name of URL
-    // this.getNumberOfParticipants.bind(this),  // Number of participants for reservation
-    // this.getDate.bind(this), // Date of reservation
-    // this.getTime.bind(this),  // Time of reservation
-    this.confirmStep.bind(this), // Show summary of values entered by user and ask confirmation to make reservation
-    this.summaryStep.bind(this),
-    this.firstStep1.bind(this),
-]));
-    this.initialDialogId = WATERFALL_DIALOG;
+        this.firstStep.bind(this),  // Ask confirmation if user wants to use the service?
+        this.getName.bind(this),    // Get name of URL
+        this.confirmStep.bind(this), // Show summary of values entered by user and ask confirmation to make reservation
+        this.summaryStep.bind(this),
+        // this.firstStep1.bind(this),
+    ]));
+        this.initialDialogId = WATERFALL_DIALOG;
 
 
-   }
-
-   async run(turnContext, accessor) {
-    const dialogSet = new DialogSet(accessor);
-    dialogSet.add(this);
-
-    const dialogContext = await dialogSet.createContext(turnContext);
-    const results = await dialogContext.continueDialog();
-    if (results.status === DialogTurnStatus.empty) {
-        await dialogContext.beginDialog(this.id);
     }
-}
+
+    async run(turnContext, accessor ,entities) {
+        const dialogSet = new DialogSet(accessor);
+        dialogSet.add(this);
+
+        const dialogContext = await dialogSet.createContext(turnContext);
+        const results = await dialogContext.continueDialog();
+        if (results.status === DialogTurnStatus.empty) {
+            await dialogContext.beginDialog(this.id, entities);
+        }
+    }
 
 async firstStep(step) {
-endDialog = false;
+
+
 // Running a prompt here means the next WaterfallStep will be run when the users response is received.
 return await step.prompt(CONFIRM_PROMPT, 'Would you like to use a service ', ['yes', 'no']);
 endDialog = false;
-// Running a prompt here means the next WaterfallStep will be run when the users response is received.
 
 
 }
@@ -87,6 +86,7 @@ endDialog = false;
 async getName(step){
      
     console.log(step.result)
+
     if(step.result === true)
     { 
     return await step.prompt(TEXT_PROMPT, 'What is the URL you need to scan ?');
@@ -102,8 +102,10 @@ async getName(step){
 }
 
 async confirmStep(step){
+    // step.value.getName = step.info.options.getName[0];
 
     step.values.name = step.result
+   
     UrlToBeScaned = step.values.name
     var msg = ` You have entered following values: \n: ${step.values.name}`
 
@@ -113,7 +115,7 @@ async confirmStep(step){
 }
 
 
-
+//Summary of the steps will return the summary and the resualt of the requiest to user 
 summaryStep(step){
 
     return new Promise((resolve, reject) => {
@@ -134,9 +136,7 @@ summaryStep(step){
                     resultOfScan = "The URL is not safe!"
 
                     step.context.sendActivity({text: "Your resualt: ",attachments:[CardFactory.adaptiveCard(CARDS [1])]});
-                    // resolve(resultOfScan);
-                    // step.context.sendActivity("Your resualt: "+ resultOfScan);
-
+                    
                     
                 }
                 else{
@@ -145,7 +145,6 @@ summaryStep(step){
                     resultOfScan = "The URL is  safe!"
                     
                     step.context.sendActivity({text: "Your resualt: ",attachments:[CardFactory.adaptiveCard(CARDS [0])]});
-                    // reject(resultOfScan);
                   
                 }
                
@@ -163,47 +162,14 @@ summaryStep(step){
 
 }
 
-// summaryStep({result: true})
-//     .then((res) => {
-//         // successful result
-//     }).catch((error) => {
-//     // error
-//     });
-
-
-
-
-
-
-
-
-
-async firstStep1(step) {
-    endDialog = false;
-    // Running a prompt here means the next WaterfallStep will be run when the users response is received.
-    await step.context.sendActivity({
-        text: ' resultOfScan',
-        attachments: [CardFactory.adaptiveCard(CARDS[0])]
-    });
-    
-    return await step.prompt(TEXT_PROMPT, '');
-          
-    }
-    
-
-
-// async noOfParticipantsValidator(promptContext) {
-//     // This condition is our validation rule. You can also change the value at this point.
-//     return promptContext.recognized.succeeded && promptContext.recognized.value > 1 && promptContext.recognized.value < 150;
-// }
 
 async isDialogComplete(){
     return endDialog;
 }
+
 }
 
 module.exports.MakeSecurityDialogs = MakeSecurityDialogs;
-
 
 
 

@@ -112,7 +112,7 @@ class EchoBot extends ActivityHandler {
         await this.conversationData.set(context,{endDialog: false});
 
         await this.makeSeccurityDialogs.run(context,this.dialogState ,entities  );
-        // conversationData.endDialog = await this.makeSeccurityDialogs.isDialogComplete(); //
+         conversationData.endDialog = await this.makeSeccurityDialogs.isDialogComplete(); //
         if(conversationData.endDialog){
             await this.previusIntent.set(context,{intentName: null});
             await this.sendSuggestedActions(context);

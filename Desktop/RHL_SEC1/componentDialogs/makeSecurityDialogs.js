@@ -163,7 +163,9 @@ summaryStep(step){
 }
 
 
-
+async isDialogComplete(){
+    return endDialog;
+}
 
 }
 

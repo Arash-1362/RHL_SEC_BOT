@@ -29,7 +29,7 @@ var resultOfScan;
 var UrlToBeScaned;
 
 
-class MakeSecurityDialogs extends ComponentDialog {
+class MakeSecurityDialogs extends ComponentDialog { //  Reuseable  dialoge component 
     
     constructor(conservsationState,userState) {
         super('makeSecurityDialogs');
@@ -48,8 +48,8 @@ class MakeSecurityDialogs extends ComponentDialog {
 
         this.firstStep.bind(this),  // Ask confirmation if user wants to use the service?
         this.getName.bind(this),    // Get name of URL
-        this.confirmStep.bind(this), // Show summary of values entered by user and ask confirmation to make reservation
-        this.summaryStep.bind(this),
+        this.confirmStep.bind(this), // Confirm value enterd by the user 
+        this.summaryStep.bind(this),// Show summary of values entered by user and ask confirmation to make reservation
         // this.firstStep1.bind(this),
     ]));
         this.initialDialogId = WATERFALL_DIALOG;
@@ -83,7 +83,7 @@ endDialog = false;
     
 
 
-async getName(step){
+async getName(step){ //Prompt user to enter the URL to be scaned 
      
     console.log(step.result)
 
@@ -101,8 +101,7 @@ async getName(step){
 
 }
 
-async confirmStep(step){
-    // step.value.getName = step.info.options.getName[0];
+async confirmStep(step){ //Double check the value yser have entered 
 
     step.values.name = step.result
    
@@ -118,8 +117,8 @@ async confirmStep(step){
 //Summary of the steps will return the summary and the resualt of the requiest to user 
 summaryStep(step){
 
-    return new Promise((resolve, reject) => {
-
+    return new Promise((resolve, reject) => { // Resualt of safe or unsafe URL submitted by user will be shown by calling Adabtive cards
+ 
         if(step.result===true)
         {
             const nvt = require('node-virustotal');

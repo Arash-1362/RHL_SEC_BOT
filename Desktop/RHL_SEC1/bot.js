@@ -3,7 +3,7 @@
 
 const { ActivityHandler, MessageFactory } = require('botbuilder');
 const { MakeSecurityDialogs } = require('./componentDialogs/makeSecurityDialogs');
-const { CancelSecurityDialog} = require('./componentDialogs/cancelSecurityDialog');
+const { IPSecurityDialog} = require('./componentDialogs/ipSecurityDialog');
 const {LuisRecognizer}  = require('botbuilder-ai');
 
 
@@ -15,7 +15,7 @@ class EchoBot extends ActivityHandler {
         this.userState = userState;
         this.dialogState = conversationState.createProperty("dialogState");
         this.makeSeccurityDialogs = new MakeSecurityDialogs(this.conversationState,this.userState);
-        this.cancelSecurityDialog = new CancelSecurityDialog(this.conversationState,this.userState);
+        this.ipSecurityDialog = new IPSecurityDialog(this.conversationState,this.userState);
         this.previusIntent = this.conversationState.createProperty("previusIntent");
         this.conversationData = this.conversationState.createProperty('conservationData');
 
@@ -34,6 +34,7 @@ class EchoBot extends ActivityHandler {
 
 
       //  See https://aka.ms/about-bot-activity-message to learn more about the message and other activity types.
+      //Processing the message received from the chanel (provided by Adapter)
         this.onMessage(async (context, next) => {
 
 
@@ -51,7 +52,8 @@ class EchoBot extends ActivityHandler {
             await this.userState.saveChanges(context, false);
             await next();
         });
-        this.onMembersAdded(async (context, next) => {
+
+        this.onMembersAdded(async (context, next) => { // present the bot on its arrival channel event 
            
             await this.sendWelcomeMessage(context)
             // By calling next() you ensure that the next BotHandler is run.
@@ -72,7 +74,7 @@ class EchoBot extends ActivityHandler {
             }
         }
     }
-    async sendSuggestedActions(turnContext) {
+    async sendSuggestedActions(turnContext) { // Up on staring the new conversation send suggested action to user 
         var reply = MessageFactory.suggestedActions(['DomainLookup.',
         'UrlLookup',
         'IP Lookup',
@@ -119,12 +121,12 @@ class EchoBot extends ActivityHandler {
         }
         break;
 
-        case 'cancel_service':
-        console.log("Inside cancel");
+        case 'IP_LOOKUP': //to be implemented
+        console.log("Inside ip");
         await this.conversationData.set(context,{endDialog: false});
 
-        await this.cancelSeccurityDialogs.run(context,this.dialogState);
-        conversationData.endDialog = await this.cancelSeccurityDialogs.isDialogComplete();
+        await this.ipSeccurityDialogs.run(context,this.dialogState);
+        conversationData.endDialog = await this.ipSeccurityDialogs.isDialogComplete();
 
         if(conversationData.endDialog){
             await this.previusIntent.set(context,{intentName: null});
@@ -133,7 +135,7 @@ class EchoBot extends ActivityHandler {
         break;
 
         default:
-            console.log("Did not match UrlLookup.")
+            console.log("Did not match IP_LOOKUP.")
             break;
 
 

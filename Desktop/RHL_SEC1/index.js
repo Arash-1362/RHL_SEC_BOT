@@ -14,7 +14,7 @@ const {
     CloudAdapter,//bot framework adapter
     ConfigurationServiceClientCredentialFactory,
     createBotFrameworkAuthenticationFromConfiguration,
-    MemoryStorage, // have added the memory storage class 
+    MemoryStorage, // memory storage class 
     ConversationState,
     UserState
 } = require('botbuilder');
@@ -45,7 +45,7 @@ const botFrameworkAuthentication = createBotFrameworkAuthenticationFromConfigura
 // See https://aka.ms/about-bot-adapter to learn more about how bots work.
 const adapter = new CloudAdapter(botFrameworkAuthentication);
 
-// Catch-all for errors.
+// Catch-all  errors and response
 const onTurnErrorHandler = async (context, error) => {
     // This check writes out errors to console log .vs. app insights.
     // NOTE: In production environment, you should consider logging this to Azure

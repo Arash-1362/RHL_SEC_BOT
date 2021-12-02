@@ -49,8 +49,7 @@ class MakeSecurityDialogs extends ComponentDialog { //  Reuseable  dialoge compo
         this.firstStep.bind(this),  // Ask confirmation if user wants to use the service?
         this.getName.bind(this),    // Get name of URL
         this.confirmStep.bind(this), // Confirm value enterd by the user 
-        this.summaryStep.bind(this),// Show summary of values entered by user and ask confirmation to make reservation
-        // this.firstStep1.bind(this),
+        this.summaryStep.bind(this),// Show summary of values entered by user and ask confirmation 
     ]));
         this.initialDialogId = WATERFALL_DIALOG;
 

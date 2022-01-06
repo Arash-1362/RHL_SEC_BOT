@@ -60,6 +60,7 @@ class MakeSecurityDialogs extends ComponentDialog { //  Reuseable  dialoge compo
         const dialogSet = new DialogSet(accessor);
         dialogSet.add(this);
 
+
         const dialogContext = await dialogSet.createContext(turnContext);
         const results = await dialogContext.continueDialog();
         if (results.status === DialogTurnStatus.empty) {
@@ -95,6 +96,7 @@ async getName(step){ //Prompt user to enter the URL to be scaned
         await step.context.sendActivity("You chose not to go ahead with Service.");
         endDialog = true;
         return await step.endDialog();   
+        console.log("rrrrrrrrrrrrrrrrrrrrrrrrrrrr")
     }
 
 
@@ -131,7 +133,7 @@ summaryStep(step){
                    
             
 
-                    resultOfScan = "The URL is not safe!"
+                   // resultOfScan = "The URL is not safe!"
 
                     step.context.sendActivity({text: "Your resualt: ",attachments:[CardFactory.adaptiveCard(CARDS [1])]});
                     
@@ -140,7 +142,7 @@ summaryStep(step){
                 else{
                    
 
-                    resultOfScan = "The URL is  safe!"
+                   // resultOfScan = "The URL is  safe!"
                     
                     step.context.sendActivity({text: "Your resualt: ",attachments:[CardFactory.adaptiveCard(CARDS [0])]});
                   

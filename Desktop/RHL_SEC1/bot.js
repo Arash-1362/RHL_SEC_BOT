@@ -41,16 +41,13 @@ class EchoBot extends ActivityHandler {
             const luisResult = await dispatchRecognizer.recognize(context)
             const intent = LuisRecognizer.topIntent(luisResult); 
             let entities = undefined
-            if(luisResult.entities["url"] !== undefined){
+            if(luisResult.entities["url"] !== undefined)
             entities = luisResult.entities["url"][0];
+
             await this.dispatchToIntent(context ,intent ,entities );
+         //   await this.makeSeccurityDialogs.run(context,this.dialogState ,entities  );
 
 
-            }else{
-            await this.makeSeccurityDialogs.run(context,this.dialogState ,entities  );
-          
-
-            }
             await next();
         });
         this.onDialog(async (context, next) => {
@@ -119,58 +116,58 @@ class EchoBot extends ActivityHandler {
         // console.log("Inside URL look up");
          await this.conversationData.set(context,{endDialog: false});
 
+         await this.makeSeccurityDialogs.run(context,this.dialogState ,entities  );
+    //     if(entities === undefined){
+
+    //     await this.makeSeccurityDialogs.run(context,this.dialogState ,entities  );
+
+    //     console.log("shooowwwwwww mmmmmwww")
+
+    //     }
         
-        if(entities === undefined){
-
-        await this.makeSeccurityDialogs.run(context,this.dialogState ,entities  );
-
-        console.log("shooowwwwwww mmmmmwww")
-
-        }
-        
-        else{
+    //     else{
 
 
-        return new Promise((resolve, reject) => { // Resualt of safe or unsafe URL submitted by user will be shown by calling Adabtive cards
+    //     return new Promise((resolve, reject) => { // Resualt of safe or unsafe URL submitted by user will be shown by calling Adabtive cards
 
           
-                const nvt = require('node-virustotal');
-                   const defaultTimedInstance = nvt.makeAPI().setKey('5d0b82b762587006ac0c6bb4197101c8df992dfd08fac4ecaf31b047aa76e866');
-                    const hashed = nvt.sha256( entities);
+    //             const nvt = require('node-virustotal');
+    //                const defaultTimedInstance = nvt.makeAPI().setKey('5d0b82b762587006ac0c6bb4197101c8df992dfd08fac4ecaf31b047aa76e866');
+    //                 const hashed = nvt.sha256( entities);
                     
-                    const theSameObject = defaultTimedInstance.urlLookup(hashed, function(err, res){
-                   var road = JSON.parse(res);
+    //                 const theSameObject = defaultTimedInstance.urlLookup(hashed, function(err, res){
+    //                var road = JSON.parse(res);
         
-                    if (road.data.attributes.last_analysis_results.Kaspersky.result != "clean") {
+    //                 if (road.data.attributes.last_analysis_results.Kaspersky.result != "clean") {
                        
                 
 
-                        console.log(" nooot    safffffeee")
+    //                     console.log(" nooot    safffffeee")
     
-                        //step.context.sendActivity({text: "Your resualt: ",attachments:[CardFactory.adaptiveCard(CARDS [1])]});
+    //                     //step.context.sendActivity({text: "Your resualt: ",attachments:[CardFactory.adaptiveCard(CARDS [1])]});
                         
                         
-                    }
-                    else{
+    //                 }
+    //                 else{
 
                        
-                        console.log("safffffeee")
+    //                     console.log("safffffeee")
                         
-                        //step.context.sendActivity({text: "Your resualt: ",attachments:[CardFactory.adaptiveCard(CARDS [0])]});
+    //                     //step.context.sendActivity({text: "Your resualt: ",attachments:[CardFactory.adaptiveCard(CARDS [0])]});
                       
-                    }
+    //                 }
                    
-                }); 
+    //             }); 
             
     
             
     
-        })
+    //     })
             
 
 
 
-    }
+    // }
 
 
 

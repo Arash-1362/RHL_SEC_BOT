@@ -27,7 +27,7 @@ const WATERFALL_DIALOG = 'WATERFALL_DIALOG';
 var endDialog ='';
 var resultOfScan;
 var UrlToBeScaned;
-
+var entitie;
 
 class MakeSecurityDialogs extends ComponentDialog { //  Reuseable  dialoge component 
     
@@ -60,7 +60,7 @@ class MakeSecurityDialogs extends ComponentDialog { //  Reuseable  dialoge compo
         const dialogSet = new DialogSet(accessor);
         dialogSet.add(this);
 
-
+        entitie = entities
         const dialogContext = await dialogSet.createContext(turnContext);
         const results = await dialogContext.continueDialog();
         if (results.status === DialogTurnStatus.empty) {
@@ -69,10 +69,52 @@ class MakeSecurityDialogs extends ComponentDialog { //  Reuseable  dialoge compo
     }
 
 async firstStep(step) {
+if(entitie !== undefined){
+    return new Promise((resolve, reject) => { // Resualt of safe or unsafe URL submitted by user will be shown by calling Adabtive cards
+ 
+       // if(step.result===true)
+       // {
+            const nvt = require('node-virustotal');
+               const defaultTimedInstance = nvt.makeAPI().setKey('5d0b82b762587006ac0c6bb4197101c8df992dfd08fac4ecaf31b047aa76e866');
+                const hashed = nvt.sha256( entitie);
+                
+                const theSameObject = defaultTimedInstance.urlLookup(hashed, function(err, res){
+               var road = JSON.parse(res);
+    
+                if (road.data.attributes.last_analysis_results.Kaspersky.result != "clean") {
+                   
+            
+
+                   // resultOfScan = "The URL is not safe!"
+
+                    step.context.sendActivity({text: "Your resualt: ",attachments:[CardFactory.adaptiveCard(CARDS [1])]});
+                    
+                    
+                }
+                else{
+                   
+
+                   // resultOfScan = "The URL is  safe!"
+                    
+                    step.context.sendActivity({text: "Your resualt: ",attachments:[CardFactory.adaptiveCard(CARDS [0])]});
+                  
+                }
+               
+            }); 
+        
+
+        //}
+      
+        endDialog = true;
+        return step.endDialog(); 
+
+    })
 
 
+}else{
 // Running a prompt here means the next WaterfallStep will be run when the users response is received.
 return await step.prompt(CONFIRM_PROMPT, 'Would you like to use a service ', ['yes', 'no']);
+}
 endDialog = false;
 
 
@@ -84,10 +126,11 @@ endDialog = false;
 
 
 async getName(step){ //Prompt user to enter the URL to be scaned 
-     
+    console.log("wiiiiiiiiiiiiiiww"+entitie)
+
     console.log(step.result)
 
-    if(step.result === true)
+    if(step.result === true ) 
     { 
     return await step.prompt(TEXT_PROMPT, 'What is the URL you need to scan ?');
     }
@@ -104,9 +147,10 @@ async getName(step){ //Prompt user to enter the URL to be scaned
 
 async confirmStep(step){ //Double check the value yser have entered 
 
+    
     step.values.name = step.result
-   
     UrlToBeScaned = step.values.name
+   
     var msg = ` You have entered following values: \n: ${step.values.name}`
 
     await step.context.sendActivity(msg);

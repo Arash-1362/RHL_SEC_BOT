@@ -27,7 +27,7 @@ const WATERFALL_DIALOG = 'WATERFALL_DIALOG';
 var endDialog ='';
 var resultOfScan;
 var UrlToBeScaned;
-
+var entitie;
 
 class MakeSecurityDialogs extends ComponentDialog { //  Reuseable  dialoge component 
     
@@ -49,7 +49,7 @@ class MakeSecurityDialogs extends ComponentDialog { //  Reuseable  dialoge compo
         this.firstStep.bind(this),  // Ask confirmation if user wants to use the service?
         this.getName.bind(this),    // Get name of URL
         this.confirmStep.bind(this), // Confirm value enterd by the user 
-        this.summaryStep.bind(this),// Show summary of values entered by user and ask confirmation 
+        this.summaryStep.bind(this),
     ]));
         this.initialDialogId = WATERFALL_DIALOG;
 
@@ -60,6 +60,7 @@ class MakeSecurityDialogs extends ComponentDialog { //  Reuseable  dialoge compo
         const dialogSet = new DialogSet(accessor);
         dialogSet.add(this);
 
+        entitie = entities
         const dialogContext = await dialogSet.createContext(turnContext);
         const results = await dialogContext.continueDialog();
         if (results.status === DialogTurnStatus.empty) {
@@ -68,11 +69,51 @@ class MakeSecurityDialogs extends ComponentDialog { //  Reuseable  dialoge compo
     }
 
 async firstStep(step) {
+if(entitie !== undefined){
+    var msg = ` You have entered following values: \n: ${entitie}`
+    await step.context.sendActivity(msg);
+    return new Promise((resolve, reject) => { // Resualt of safe or unsafe URL submitted by user will be shown by calling Adabtive cards
+ 
+     
+            const nvt = require('node-virustotal');
+               const defaultTimedInstance = nvt.makeAPI().setKey('5d0b82b762587006ac0c6bb4197101c8df992dfd08fac4ecaf31b047aa76e866');
+                const hashed = nvt.sha256( entitie);
+                
+                const theSameObject = defaultTimedInstance.urlLookup(hashed, function(err, res){
+               var road = JSON.parse(res);
+    
+                if (road.data.attributes.last_analysis_results.Kaspersky.result != "clean") {
+                   
+                    endDialog = true;
+                    resolve(endDialog) ;
+                
+                    step.context.sendActivity({text: "Your resualt: ",attachments:[CardFactory.adaptiveCard(CARDS [1])]});
+                    
+                }
+                else{
+
+                    endDialog = true;
+                    resolve(endDialog) ;
+                
+                    step.context.sendActivity({text: "Your resualt: ",attachments:[CardFactory.adaptiveCard(CARDS [0])]});
+                  
+                }
+               
+            }); 
+        
+
+      
+
+    })
 
 
+}else{
 // Running a prompt here means the next WaterfallStep will be run when the users response is received.
-return await step.prompt(CONFIRM_PROMPT, 'Would you like to use a service ', ['yes', 'no']);
 endDialog = false;
+return await step.prompt(CONFIRM_PROMPT, 'Would you like to use a service ', ['yes', 'no']);
+
+
+}
 
 
 }
@@ -83,10 +124,10 @@ endDialog = false;
 
 
 async getName(step){ //Prompt user to enter the URL to be scaned 
-     
+
     console.log(step.result)
 
-    if(step.result === true)
+    if(step.result === true ) 
     { 
     return await step.prompt(TEXT_PROMPT, 'What is the URL you need to scan ?');
     }
@@ -97,24 +138,25 @@ async getName(step){ //Prompt user to enter the URL to be scaned
         return await step.endDialog();   
     }
 
-
 }
 
 async confirmStep(step){ //Double check the value yser have entered 
 
+    
     step.values.name = step.result
-   
     UrlToBeScaned = step.values.name
+   
     var msg = ` You have entered following values: \n: ${step.values.name}`
 
     await step.context.sendActivity(msg);
-
     return await step.prompt(CONFIRM_PROMPT, 'Are you sure URL is correct and you want to go ahead?', ['yes', 'no']);
 }
 
 
+
+// the problem is the code after this pronise is not running and this promise is not returning anything 
 //Summary of the steps will return the summary and the resualt of the requiest to user 
-summaryStep(step){
+summaryStep (step){
 
     return new Promise((resolve, reject) => { // Resualt of safe or unsafe URL submitted by user will be shown by calling Adabtive cards
  
@@ -131,40 +173,52 @@ summaryStep(step){
                    
             
 
-                    resultOfScan = "The URL is not safe!"
+                   // resultOfScan = "The URL is not safe!"
+                   endDialog = true;
+                   resolve(endDialog) ;
 
                     step.context.sendActivity({text: "Your resualt: ",attachments:[CardFactory.adaptiveCard(CARDS [1])]});
-                    
-                    
+                  
+                   
+
                 }
                 else{
                    
 
-                    resultOfScan = "The URL is  safe!"
-                    
+                   // resultOfScan = "The URL is  safe!"
+                   endDialog = true;
+                   resolve(endDialog) ;
+               
                     step.context.sendActivity({text: "Your resualt: ",attachments:[CardFactory.adaptiveCard(CARDS [0])]});
                   
+                  
+                
+            
+                    
                 }
-               
-            }); 
+       
+            } ); 
         
 
+        }else{
+
+            step.context.sendActivity("URL is not correct !! try the service agine ...");
+            endDialog = true;
+            resolve(endDialog) ;
         }
-      
-        endDialog = true;
-        return step.endDialog(); 
+       
 
     })
-        
-
-
+ 
 }
 
 
-async isDialogComplete(){
+
+
+
+ isDialogComplete(){
     return endDialog;
 }
-
 }
 
 module.exports.MakeSecurityDialogs = MakeSecurityDialogs;

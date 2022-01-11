@@ -6,14 +6,14 @@ const {DialogSet, DialogTurnStatus } = require('botbuilder-dialogs');
 const {CardFactory} = require('botbuilder');
 
 //importing card factory class
-const ResualtCard = require('./resources/adaptiveCard/ResualtCard')
-const UnsafeResault = require('./resources/adaptiveCard/Unsafe.json')
+const safeResault = require('./resources/adaptiveCard/safeResault')
+const unSafeResault = require('./resources/adaptiveCard/unSafeResault.json')
 
 
 const CARDS = [
 
-    ResualtCard,
-    UnsafeResault
+    safeResault,
+    unSafeResault
 ];
 
 
@@ -131,7 +131,7 @@ async getName(step){ //Prompt user to enter the URL to be scaned
     { 
     return await step.prompt(TEXT_PROMPT, 'What is the URL you need to scan ?');
     }
-    if(step.result === false)
+    if(step.result === false )
     { 
         await step.context.sendActivity("You chose not to go ahead with Service.");
         endDialog = true;
@@ -163,38 +163,28 @@ summaryStep (step){
         if(step.result===true)
         {
             const nvt = require('node-virustotal');
-               const defaultTimedInstance = nvt.makeAPI().setKey('5d0b82b762587006ac0c6bb4197101c8df992dfd08fac4ecaf31b047aa76e866');
+                const defaultTimedInstance = nvt.makeAPI().setKey('5d0b82b762587006ac0c6bb4197101c8df992dfd08fac4ecaf31b047aa76e866');
                 const hashed = nvt.sha256( UrlToBeScaned);
-                
                 const theSameObject = defaultTimedInstance.urlLookup(hashed, function(err, res){
-               var road = JSON.parse(res);
+                var road = JSON.parse(res);
     
                 if (road.data.attributes.last_analysis_results.Kaspersky.result != "clean") {
-                   
-            
-
-                   // resultOfScan = "The URL is not safe!"
-                   endDialog = true;
-                   resolve(endDialog) ;
+                
+                      // resultOfScan = "The URL is not safe!"
+                    endDialog = true;
+                    resolve(endDialog) ;
 
                     step.context.sendActivity({text: "Your resualt: ",attachments:[CardFactory.adaptiveCard(CARDS [1])]});
                   
-                   
 
                 }
                 else{
                    
-
-                   // resultOfScan = "The URL is  safe!"
-                   endDialog = true;
-                   resolve(endDialog) ;
-               
+                    endDialog = true;
+                    resolve(endDialog) ;
                     step.context.sendActivity({text: "Your resualt: ",attachments:[CardFactory.adaptiveCard(CARDS [0])]});
                   
-                  
-                
-            
-                    
+                             
                 }
        
             } ); 

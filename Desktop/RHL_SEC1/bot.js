@@ -5,9 +5,28 @@ const { ActivityHandler, MessageFactory } = require('botbuilder');
 const { MakeSecurityDialogs } = require('./componentDialogs/makeSecurityDialogs');
 const { IPSecurityDialog} = require('./componentDialogs/ipSecurityDialog');
 const {LuisRecognizer}  = require('botbuilder-ai');
+const {CardFactory} = require('botbuilder');
+
+const path = require('path');
+const axios = require('axios');
+const fs = require('fs');
+
+const unSafeResault = require('./componentDialogs/resources/adaptiveCard/unSafeResault.json')
+const safeResault = require('./componentDialogs/resources/adaptiveCard/safeResault.json')
+
+var  con = "";
+var endDialog ='';
 
 
-//checking git here 
+const CARDS = [
+
+    safeResault,
+    unSafeResault
+
+];
+
+
+
 class EchoBot extends ActivityHandler {
     constructor(conversationState,userState) {
         super();
@@ -19,7 +38,8 @@ class EchoBot extends ActivityHandler {
         this.previusIntent = this.conversationState.createProperty("previusIntent");
         this.conversationData = this.conversationState.createProperty('conservationData');
 
-    
+
+
       
         const dispatchRecognizer = new LuisRecognizer({
             applicationId: process.env.LuisAppId,
@@ -33,20 +53,22 @@ class EchoBot extends ActivityHandler {
         
 
 
-      //  See https://aka.ms/about-bot-activity-message to learn more about the message and other activity types.
       //Processing the message received from the chanel (provided by Adapter)
         this.onMessage(async (context, next) => {
-
-
+            con = context;
             const luisResult = await dispatchRecognizer.recognize(context)
             const intent = LuisRecognizer.topIntent(luisResult); 
             let entities = undefined
+
             if(luisResult.entities["url"] !== undefined)
             entities = luisResult.entities["url"][0];
 
-            await this.dispatchToIntent(context ,intent ,entities );
-         //   await this.makeSeccurityDialogs.run(context,this.dialogState ,entities  );
+            if(luisResult.entities["ip"] !== undefined)
+            entities = luisResult.entities["ip"][0];
 
+       
+
+            await this.dispatchToIntent(context ,intent ,entities );
 
             await next();
         });
@@ -80,7 +102,7 @@ class EchoBot extends ActivityHandler {
     }
     async sendSuggestedActions(turnContext) { // Up on staring the new conversation send suggested action to user 
         var reply = MessageFactory.suggestedActions(['DomainLookup.',
-        'UrlLookup',
+        'Url Lookup',
         'IP Lookup',
         'DomainComment Lookup',
         'FileLookup',
@@ -91,6 +113,7 @@ class EchoBot extends ActivityHandler {
         await turnContext.sendActivity(reply);
     }
 //routing all the incomig messages
+
     async dispatchToIntent(context ,intent ,entities){
           var currentIntent = '';   
           const previusIntent = await this.previusIntent.get(context,{});
@@ -98,6 +121,8 @@ class EchoBot extends ActivityHandler {
           
         if(previusIntent.intentName && conversationData.endDialog === false ) {
             currentIntent = previusIntent.intentName;
+            console.log("inside previus intent"+currentIntent)
+
 
         }
         else if ((previusIntent.intentName && conversationData.endDialog === true)){
@@ -113,79 +138,22 @@ class EchoBot extends ActivityHandler {
         switch(currentIntent)
     {
         case 'URL_LOOKUP':
-        // console.log("Inside URL look up");
          await this.conversationData.set(context,{endDialog: false});
-
          await this.makeSeccurityDialogs.run(context,this.dialogState ,entities  );
-    //     if(entities === undefined){
-
-    //     await this.makeSeccurityDialogs.run(context,this.dialogState ,entities  );
-
-    //     console.log("shooowwwwwww mmmmmwww")
-
-    //     }
-        
-    //     else{
-
-
-    //     return new Promise((resolve, reject) => { // Resualt of safe or unsafe URL submitted by user will be shown by calling Adabtive cards
-
-          
-    //             const nvt = require('node-virustotal');
-    //                const defaultTimedInstance = nvt.makeAPI().setKey('5d0b82b762587006ac0c6bb4197101c8df992dfd08fac4ecaf31b047aa76e866');
-    //                 const hashed = nvt.sha256( entities);
-                    
-    //                 const theSameObject = defaultTimedInstance.urlLookup(hashed, function(err, res){
-    //                var road = JSON.parse(res);
-        
-    //                 if (road.data.attributes.last_analysis_results.Kaspersky.result != "clean") {
-                       
-                
-
-    //                     console.log(" nooot    safffffeee")
-    
-    //                     //step.context.sendActivity({text: "Your resualt: ",attachments:[CardFactory.adaptiveCard(CARDS [1])]});
-                        
-                        
-    //                 }
-    //                 else{
-
-                       
-    //                     console.log("safffffeee")
-                        
-    //                     //step.context.sendActivity({text: "Your resualt: ",attachments:[CardFactory.adaptiveCard(CARDS [0])]});
-                      
-    //                 }
-                   
-    //             }); 
-            
-    
-            
-    
-    //     })
-            
-
-
-
-    // }
-
-
-
-
-
          conversationData.endDialog = await this.makeSeccurityDialogs.isDialogComplete(); //
-        if(conversationData.endDialog){
+         if(conversationData.endDialog){
             await this.previusIntent.set(context,{intentName: null});
             await this.sendSuggestedActions(context);
+            
         }
         break;
+
 
         case 'IP_LOOKUP': //to be implemented
         console.log("Inside ip");
         await this.conversationData.set(context,{endDialog: false});
-
-        await this.ipSeccurityDialogs.run(context,this.dialogState);
-        conversationData.endDialog = await this.ipSeccurityDialogs.isDialogComplete();
+        await this.ipSecurityDialog.run(context,this.dialogState,entities);
+        conversationData.endDialog = await this.ipSecurityDialog.isDialogComplete();
 
         if(conversationData.endDialog){
             await this.previusIntent.set(context,{intentName: null});
@@ -193,8 +161,52 @@ class EchoBot extends ActivityHandler {
         }
         break;
 
+        case 'Hello':
+
+            await this.previusIntent.set(context,{intentName: null});
+            await context.sendActivity("welcome agine !!!");
+
+             await this.sendSuggestedActions(context)
+           
+           
+            break;
+
+            case 'FileUpload':
+                
+
+            await this.conversationData.set(context,{endDialog: false});
+
+            if(!context.activity.attachments)
+            await context.sendActivity("Pleas upload your file to be scaned  !!!");
+
+            if (context.activity.attachments && context.activity.attachments.length > 0) {
+               
+            // The user sent an attachment and the bot should handle the incoming attachment.
+            await this.handleIncomingAttachment(context );
+
+            // const promises = context.activity.attachments.map(this.downloadAttachmentAndWrite);
+
+            // const promi = context.activity.attachments.map(this.downloadAttachmentAndWrite);
+            // await this.fileUpload.run(context,this.dialogState ,promi.localPath );
+
+
+            }
+
+            conversationData.endDialog = await this.isDialogComplete();
+            if(conversationData.endDialog){
+                await this.previusIntent.set(context,{intentName: null});
+                await this.sendSuggestedActions(context);
+                endDialog = false;
+
+            }
+
+           
+           
+            break;
+
         default:
-            console.log("Did not match IP_LOOKUP.")
+            await this.previusIntent.set(context,{intentName: null});
+            await this.sendSuggestedActions(context);
             break;
 
 
@@ -202,6 +214,160 @@ class EchoBot extends ActivityHandler {
     }
 }
 
+
+
+
+/**
+     * Saves incoming attachments to disk by calling `this.downloadAttachmentAndWrite()` and
+     * by make of promise it async the next call to the api and makes sure the file path is obtained 
+     * because of the file writing on the disk 
+     * @param {Object} turnContext
+     */
+ async handleIncomingAttachment(turnContext) {
+    // Prepare Promises to download each attachment and then execute each Promise.
+    const promises = turnContext.activity.attachments.map(this.downloadAttachmentAndWrite);
+    const successfulSaves = await Promise.all(promises);
+
+    async function replyForReceivedAttachments(localAttachmentData) {
+       
+    }
+
+    // Prepare Promises to reply to the user with information about saved attachments.
+    // The current TurnContext is bound so `replyForReceivedAttachments` can also send replies.
+    const replyPromises = successfulSaves.map(replyForReceivedAttachments.bind(turnContext));
+    
+
+    await Promise.all(replyPromises);
+
+
+            
+
+}
+
+
+
+
+
+
+
+/**
+     * Downloads attachment to the disk.
+     * @param {Object} attachment
+     */
+ async downloadAttachmentAndWrite(attachment) {
+    // Retrieve the attachment via the attachment's contentUrl.
+    const url = attachment.contentUrl;
+    // Local file path for the bot to save the attachment.
+    const localFileName = path.join(__dirname, attachment.name);
+
+     
+        
+
+    try {
+        // arraybuffer is necessary for images
+        const response = await axios.get(url, { responseType: 'arraybuffer' });
+        // If user uploads JSON file, this prevents it from being written as "{"type":"Buffer","data":[123,13,10,32,32,34,108..."
+        if (response.headers['content-type'] === 'application/json') {
+            response.data = JSON.parse(response.data, (key, value) => {
+                return value && value.type === 'Buffer' ? Buffer.from(value.data) : value;
+            });
+        }
+        fs.writeFile(localFileName, response.data, (fsError) => {
+            if (fsError) {
+                throw fsError;
+            }
+        });
+    } catch (error) {
+        console.error(error);
+        return undefined;
+    }
+
+    
+    return new Promise((resolve, reject) => { // Resualt of safe or unsafe URL submitted by user will be shown by calling Adabtive cards
+
+            const nvt = require('node-virustotal');
+            const defaultTimedInstance = nvt.makeAPI().setKey('5d0b82b762587006ac0c6bb4197101c8df992dfd08fac4ecaf31b047aa76e866');
+            const aMaliciousFile = require('fs').readFileSync(localFileName);
+            const hashed = nvt.sha256(aMaliciousFile);
+            // const theSameObject1 = defaultTimedInstance.fileLookup(hashed, function(err, res){
+            const theSameObject = defaultTimedInstance.uploadFile(aMaliciousFile,  attachment.name, 'application/x-msdownload', function(err, res){
+            var road = JSON.parse(res);
+            const SameObject = defaultTimedInstance.fileLookup( hashed, function(err, res){
+                var road = JSON.parse(res);
+
+
+                    if (road.data.attributes.last_analysis_results.Kaspersky.result != "clean") {
+                       
+                        endDialog = true;
+                        resolve(endDialog) ;
+                        con.sendActivity("Hash of your file is  : "+hashed);
+
+                        con.sendActivity({text: "Your resualt: ",attachments:[CardFactory.adaptiveCard(CARDS [0])]});
+                        // con.sendActivity( "Your resualt: ");
+
+                        
+                    }
+                    else{
+    
+                        endDialog = true;
+                        resolve(endDialog) ;
+                    
+                        this.sendActivity({text: "Your resualt: ",attachments:[CardFactory.adaptiveCard(CARDS [1])]});
+                      
+                    }
+                });
+
+                }); 
+           
+    
+        })
+    // If no error was thrown while writing to disk, return the attachment's name
+    // and localFilePath for the response back to the user.
+    // await this.fileUpload.run(context,this.dialogState,localFileName);
+
+
+    // return {
+    //     fileName: attachment.name,
+    //     localPath: localFileName,
+
+        
+
+        
+    // };
+
+    
+
+
+
+ }
+ isDialogComplete(){
+    return endDialog;
+}
+
+
+
 }
 
 module.exports.EchoBot = EchoBot;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

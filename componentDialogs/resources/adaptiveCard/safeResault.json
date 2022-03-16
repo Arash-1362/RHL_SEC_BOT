@@ -1,0 +1,56 @@
+{
+    "$schema":"http://adaptivecards.io/schemas/adaptive-card.json",
+    "type": "AdaptiveCard",
+    "version": "1.0",
+    "body": [
+      {
+        "speak": "!!!\tSAFE !!!.",
+        "type": "ColumnSet",
+        "columns": [
+          {
+            "type": "Column",
+            "width": 2,
+            "items": [
+              {
+                "type": "TextBlock",
+                "text": " \t*******DONE*******\n***",
+                "size": "extraLarge"
+
+              },
+              {
+                "type": "TextBlock",
+                "text": " \t*******SAFE*******\n***",
+                "weight": "bolder",
+                "size": "extraLarge",
+                "spacing": "none"
+              },
+              {
+                "type": "TextBlock",
+                "text": "",
+                "size": "large",
+                "isSubtle": true,
+                "spacing": "none"
+              },
+              {
+                "type": "TextBlock",
+                "text": "\t********  THANK YOU ********   ",
+                "size": "medium",
+                "wrap": true
+              }
+            ]
+          },
+          {
+            "type": "Column",
+            "width": 1,
+            "items": [
+              {
+                "type": "Image",
+                "url": "https://picsum.photos/id/237/200/300",
+                "size": "auto"
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  }
